@@ -3,7 +3,12 @@ package project;
 
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
+
+import dataDriven.ReadFromFile;
+import dataDriven.User;
+
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.AssertJUnit;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNot.not;
@@ -35,6 +40,12 @@ public class TestSignUp {
 	private Map<String, Object> vars;
 	JavascriptExecutor js;
 
+	@DataProvider (name = "users_data_driven")
+	public Object[] dpMethod() {
+		ReadFromFile fileProducts = new ReadFromFile();
+		return fileProducts.getUsers();
+	}
+	
 	@BeforeMethod
 	public void setUp() {
 		System.setProperty("webdriver.chrome.driver", "C:\\Users\\dvir tayeb\\Documents\\Selnium\\chromedriver.exe");
@@ -45,13 +56,14 @@ public class TestSignUp {
 
 	@AfterMethod
 	public void tearDown() {
-//    driver.quit();
+    driver.quit();
 	}
 
-	@Test
-	public void test_signUp() throws InterruptedException {
-		// Test name: test02
+	@Test (dataProvider = "users_data_driven")
+	public void test_signUp(User user) throws InterruptedException {
+		// Test name: test_sign_up
 		// Step # | name | target | value
+		System.out.println("Data inserted Sign Up: username="+user.getUsername()+", password="+ user.getPassword());
 		driver.get("https://www.demoblaze.com/index.html");
 		driver.manage().window().maximize();
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
@@ -60,11 +72,12 @@ public class TestSignUp {
 		signUp.click();
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 		WebElement username = driver.findElement(By.id("sign-username"));
-		username.sendKeys("dvdv");
+		username.sendKeys(user.getUsername());
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 		WebElement password = driver.findElement(By.id("sign-password"));
 		driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
-		password.sendKeys("1234");
+		Thread.sleep(1000);
+		password.sendKeys(user.getPassword());
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 		WebElement signUpEnd = driver.findElement(By.xpath("//*[@id=\"signInModal\"]/div/div/div[3]/button[2]"));
 		signUpEnd.click();

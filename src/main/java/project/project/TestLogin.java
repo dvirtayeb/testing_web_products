@@ -3,8 +3,14 @@ package project;
 
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
+
+import dataDriven.ReadFromFile;
+import dataDriven.User;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.AssertJUnit;
+import org.testng.annotations.DataProvider;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.testng.Assert.assertEquals;
@@ -22,6 +28,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.JavascriptExecutor;
+import org.apache.poi.hpsf.Array;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.Keys;
 import java.util.*;
@@ -34,7 +41,14 @@ public class TestLogin {
 	private WebDriver driver;
 	private Map<String, Object> vars;
 	JavascriptExecutor js;
+	
+	@DataProvider (name = "users_data_driven")
+	public Object[] dpMethod() {
+		ReadFromFile fileProducts = new ReadFromFile();
+		return fileProducts.getUsers();
+	}
 
+	
 	@BeforeMethod
 	public void setUp() {
 		System.setProperty("webdriver.chrome.driver", "C:\\Users\\dvir tayeb\\Documents\\Selnium\\chromedriver.exe");
@@ -45,33 +59,34 @@ public class TestLogin {
 
 	@AfterMethod
 	public void tearDown() {
-//    driver.quit();
+    driver.quit();
 	}
 
-	@Test
-	public void test_login() throws InterruptedException {
-		// Test name: test02
+	@Test(dataProvider = "users_data_driven")
+	public void test_login(User user) throws InterruptedException {
+		// Test name: test_login
 		// Step # | name | target | value
+		System.out.println("Data inserted Login: "+user.getUsername()+", "+ user.getPassword());
 		driver.get("https://www.demoblaze.com/index.html");
 		driver.manage().window().maximize();
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 		WebElement btnLogin = driver.findElement(By.id("login2"));
 		btnLogin.click();
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-		WebElement username = driver.findElement(By.id("loginusername"));
-		username.sendKeys("dvdv");
+		WebElement usernameElement = driver.findElement(By.id("loginusername"));
+		usernameElement.sendKeys(user.getUsername());
 		driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
-		WebElement password = driver.findElement(By.id("loginpassword"));
-		password.sendKeys("1234");
+		WebElement passwordElement = driver.findElement(By.id("loginpassword"));
+		passwordElement.sendKeys(user.getPassword());
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 		WebElement loginEnd = driver.findElement(By.xpath("//*[@id=\"logInModal\"]/div/div/div[3]/button[2]"));
 		loginEnd.click();
 		Thread.sleep(2000);
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-		WebElement user = driver.findElement(By.id("nameofuser"));
+		WebElement userElement = driver.findElement(By.id("nameofuser"));
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 		
-		assertEquals(user.getText(), "Welcome dvdv");
+		assertEquals(userElement.getText(), "Welcome "+ user.getUsername());
 		
 	}
 
